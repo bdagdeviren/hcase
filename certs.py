@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-
+import glob
 import OpenSSL
 import uvicorn
 from fastapi import FastAPI
@@ -13,19 +13,11 @@ certificate_list = os.getenv('CERT_LIST').split(",")
 
 
 def run_fast_scandir(dir, ext):  # dir: str, ext: list
-    subfolders, files = [], []
+    files = []
 
-    for f in os.scandir(dir):
-        if f.is_dir():
-            subfolders.append(f.path)
-        if f.is_file():
-            if os.path.splitext(f.name)[1].lower() in ext:
-                files.append(f.path)
-
-    for dir in list(subfolders):
-        sf, f = run_fast_scandir(dir, ext)
-        subfolders.extend(sf)
-        files.extend(f)
+    for filename in glob.iglob(dir + '**/**', recursive=True):
+        if os.path.isfile(filename):
+            files.append(filename)
 
     return files
 
