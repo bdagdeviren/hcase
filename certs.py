@@ -72,8 +72,8 @@ def get_expire_date_like_prometheus():
             else:
                 check = 0
 
-            fullString += "certificate_expire_check{cert_name=" + os.path.basename(
-                i) + ",not_after=" + dateTimeBefore + ",not_before=" + dateTimeAfter+"} " + str(check)
+            fullString += "certificate_expire_check{cert_name=\"" + os.path.basename(
+                i) + "\",not_after=\"" + dateTimeBefore + "\",not_before=\"" + dateTimeAfter+"\"} " + str(check) + "\n"
 
     return fullString
 
