@@ -2,3 +2,6 @@
 build
 dist
 venv
+certs
+certs.spec
+k8s-certs.iml
