@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: certs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: certs-deployment
+  template:
+    metadata:
+      labels:
+        app: certs-deployment
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - name: certs
+          image: cregistry.k2.net/devops/certs:1.0.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CERT_DIR
+              value: "/etc/kubernetes/pki"
+            - name: CERT_LIST
+              value: "apiserver.crt,apiserver-kubelet-client.crt,ca.crt,front-proxy-ca.crt,front-proxy-client.crt"
+          volumeMounts:
+            - mountPath: /etc/kubernetes/pki
+              name: k8s-certs
+              readOnly: true
+      volumes:
+        - hostPath:
+            path: /etc/kubernetes/pki
+          name: k8s-certs
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: certs-deployment
+  labels:
+    app: certs-deployment
+spec:
+  selector:
+    app: certs-deployment
+  ports:
+    - protocol: TCP
+      port: 8000
+      name: metrics
+      targetPort: 8000
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: certs-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: orsa-cert
+  routes:
+    - kind: Rule
+      match: Host(`orsa.k2.net`)&& PathPrefix(`/certs`)
+      services:
+        - name: certs
+          port: 8000
+      middlewares:
+        - name: certs-stripprefix
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: certs-stripprefix
+  namespace: default
+spec:
+  stripPrefix:
+    prefixes:
+      - /certs
+    forceSlash: false
