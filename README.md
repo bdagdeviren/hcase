@@ -178,5 +178,7 @@ Calculated certificate expiration time using openssl library in /etc/kubernetes/
 ```
 2. Add config repositories from github
 
+![img_2.png](img_2.png)
+
 
 
