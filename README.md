@@ -180,5 +180,9 @@ Calculated certificate expiration time using openssl library in /etc/kubernetes/
 
 ![img_2.png](img_2.png)
 
+## Design (Architecture)
+
+![img_3.png](img_3.png)
+
 
 
